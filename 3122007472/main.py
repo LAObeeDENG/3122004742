@@ -3,8 +3,6 @@ import re
 import jieba
 from collections import Counter
 from Levenshtein import distance as levenshtein_distance  # 使用Levenshtein包计算编辑距离
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 # 读取文件内容
 def read_file(file_path):
@@ -19,7 +17,6 @@ def preprocess_text(text):
     text = re.sub(r'\s+', '', text).strip()
     #去除停用词 长文本中的常用词不计入查重
     if(len(text) > 800):
-        print(len(text))
         text = re.sub(r'[的,了,是,很,我,有,和,也,吧,啊,你,他,她]','',text)
     return text
 
@@ -46,7 +43,7 @@ def text_to_vector(words, vocabulary):
     return vector
 
 
-# 计算编辑距离相似度 更适合短文本
+# 计算编辑距离相似度 更适合短文本 捕捉局部修改或顺序变化的影响
 def calculate_edit_distance_similarity(text1, text2):
     edit_distance = levenshtein_distance(text1, text2)
     max_len = max(len(text1), len(text2))
@@ -69,7 +66,7 @@ def calculate_cosine_similarity(vec1, vec2):
     return dot_product / (magnitude1 * magnitude2)
 
 
-# 完整的余弦查重计算函数
+# 完整的余弦 + 编辑距离查重计算函数
 def similarity(text1, text2,cosine_weight,edit_distance_weight):
     r_text1=read_file(text1)
     r_text2=read_file(text2)
@@ -84,26 +81,37 @@ def similarity(text1, text2,cosine_weight,edit_distance_weight):
 
     # 字典
     vocabulary = list(set(original_words + modified_words))
-    print(vocabulary)
     # 将两个文本转化为词频向量
     original_vector = text_to_vector(original_words, vocabulary)
     modified_vector = text_to_vector(modified_words, vocabulary)
-    print(original_vector)
-    print(modified_vector)
 
     # 计算余弦相似度
     similarity_result = calculate_cosine_similarity(original_vector, modified_vector)
-    print(similarity_result)
+    print(f"余弦相似度：{similarity_result}")
     # 计算编辑距离相似度
     edit_distance_similarity_result = calculate_edit_distance_similarity(p_text1, p_text2)
-    print(edit_distance_similarity_result)
+    print(f"编辑距离相似度：{edit_distance_similarity_result}")
     # 加权计算最终相似度
     final_similarity = (cosine_weight * similarity_result) + (edit_distance_weight * edit_distance_similarity_result)
     return final_similarity
 
 
 if __name__ == "__main__":
-    text1 = "../examples/orig.txt"
-    text2 = "../examples/orig_0.8_dis_1.txt"
-    similarity_result = similarity(text1, text2,cosine_weight=0.7, edit_distance_weight=0.3)
-    print(f"文本查重：{similarity_result:.20f}")
+    # text1 = "../examples/orig.txt"
+    # text2 = "../examples/orig_0.8_dis_10.txt"
+    # similarity_result = similarity(text1, text2,cosine_weight=0.7, edit_distance_weight=0.3)
+    # print(f"文本查重：{similarity_result:.2f}")
+    if len(sys.argv) != 4:
+        print("用法: python main.py <original_file> <plagiarized_file> <output_file>")
+        sys.exit(1)
+
+    original_file = sys.argv[1]
+    plagiarized_file = sys.argv[2]
+    output_file = sys.argv[3]
+
+    # 计算相似度
+    similarity_result = similarity(original_file, plagiarized_file, cosine_weight=0.7, edit_distance_weight=0.3)
+    print(f"文本查重：{similarity_result:.2f}")
+    # 输出相似度结果到指定的文件中
+    with open(output_file, 'w', encoding='utf-8') as file:
+        file.write(f"文本查重：{similarity_result:.2f}\n")
