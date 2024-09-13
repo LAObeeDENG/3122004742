@@ -14,7 +14,7 @@ def preprocess_text(text):
     # 去除标点符号
     text = re.sub(r'[^\w\s]', '', text)
     # 去除多余的空白符
-    text = re.sub(r'\s+', '', text).strip()
+    text = re.sub(r'\s+', ' ', text).strip()
     #去除停用词 长文本中的常用词不计入查重
     if(len(text) > 800):
         text = re.sub(r'[的,了,是,很,我,有,和,也,吧,啊,你,他,她]','',text)
@@ -22,8 +22,13 @@ def preprocess_text(text):
 
 # 使用Jieba对文本进行分词
 def segment_text(text):
-    words = jieba.lcut(text,cut_all=True)
-    return words
+    def segment_text(text):
+        words = jieba.lcut(text, cut_all=True)
+        processed_words = []
+        for word in words:
+            if word.strip():
+                processed_words.append(word)
+        return processed_words
 
 # 计算词频
 def calculate_term_frequency(words):
@@ -95,14 +100,9 @@ def similarity(text1, text2,cosine_weight,edit_distance_weight):
     final_similarity = (cosine_weight * similarity_result) + (edit_distance_weight * edit_distance_similarity_result)
     return final_similarity
 
-
-if __name__ == "__main__":
-    # text1 = "../examples/orig.txt"
-    # text2 = "../examples/orig_0.8_dis_10.txt"
-    # similarity_result = similarity(text1, text2,cosine_weight=0.7, edit_distance_weight=0.3)
-    # print(f"文本查重：{similarity_result:.2f}")
+def cmd():
     if len(sys.argv) != 4:
-        print("用法: python main.py <original_file> <plagiarized_file> <output_file>")
+        print("路径有误！用法: python main.py <original_file> <plagiarized_file> <output_file>")
         sys.exit(1)
 
     original_file = sys.argv[1]
@@ -115,3 +115,11 @@ if __name__ == "__main__":
     # 输出相似度结果到指定的文件中
     with open(output_file, 'w', encoding='utf-8') as file:
         file.write(f"文本查重：{similarity_result:.2f}\n")
+
+if __name__ == "__main__":
+    # text1 = "../examples/orig.txt"
+    # text2 = "../examples/orig_0.8_dis_10.txt"
+    # similarity_result = similarity(text1, text2,cosine_weight=0.7, edit_distance_weight=0.3)
+    # print(f"文本查重：{similarity_result:.2f}")
+
+    cmd()
