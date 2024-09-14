@@ -1,3 +1,4 @@
+import os
 import unittest
 import numpy as np
 from main import preprocess_text, segment_text, text_to_vector, calculate_cosine_similarity, calculate_edit_distance_similarity, similarity
@@ -113,6 +114,21 @@ class TestSimilarityModule(unittest.TestCase):
         similarity_result = similarity(text1, text2, cosine_weight=0.7, edit_distance_weight=0.3)
         print(f"文本查重：{similarity_result:.2f}")
         self.assertLess(similarity_result, 0.1)
+
+    #测试16: 测试相似度函数 - 不存在的文本文件：报错
+    def test16_similarity_none(self):
+        text1 = "../examples/orig.txt"
+        text2 = "../examples/cccccc.txt"
+        similarity_result = similarity(text1, text2, cosine_weight=0.7, edit_distance_weight=0.3)
+        print(f"文本查重：{similarity_result:.2f}")
+        self.assertLess(similarity_result, 0.1)
+
+    #测试17：测试main函数是否能顺利读取cmd指令并运行
+    def test16_main(self):
+        os.system("python main.py E:\放项目用\soft_homework\homework2\examples\orig.txt "
+                  "E:\放项目用\soft_homework\homework2\examples\orig_0.8_add.txt "
+                  "E:\放项目用\soft_homework\homework2\examples\output.txt")
+
 
 if __name__ == '__main__':
     unittest.main()
