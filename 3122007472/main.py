@@ -1,14 +1,18 @@
+import os
 import sys
 import re
 import jieba
 from collections import Counter
 from Levenshtein import distance as levenshtein_distance  # 使用Levenshtein包计算编辑距离
+from line_profiler_pycharm import profile
 
+@profile
 # 读取文件内容
 def read_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         return file.read()
 
+@profile
 # 文本预处理函数
 def preprocess_text(text):
     # 去除标点符号
@@ -20,6 +24,7 @@ def preprocess_text(text):
         text = re.sub(r'[的了是很我有和也吧啊你他她]','',text)
     return text
 
+@profile
 # 使用Jieba对文本进行分词
 def segment_text(text):
     words = jieba.lcut(text, cut_all=True)
@@ -29,11 +34,13 @@ def segment_text(text):
             processed_words.append(word)
     return processed_words
 
+@profile
 # 计算词频
 def calculate_term_frequency(words):
     return Counter(words)
 
 
+@profile
 # 生成向量
 def text_to_vector(words, vocabulary):
     vector = [0] * len(vocabulary)
@@ -46,7 +53,7 @@ def text_to_vector(words, vocabulary):
             vector[idx] = count
     return vector
 
-
+@profile
 # 计算编辑距离相似度 更适合短文本 捕捉局部修改或顺序变化的影响
 def calculate_edit_distance_similarity(text1, text2):
     edit_distance = levenshtein_distance(text1, text2)
@@ -55,6 +62,7 @@ def calculate_edit_distance_similarity(text1, text2):
         return 1.0
     return 1 - (edit_distance / max_len)
 
+@profile
 #计算余弦相似度
 def calculate_cosine_similarity(vec1, vec2):
     vec1 = [float(i) for i in vec1]
@@ -69,7 +77,7 @@ def calculate_cosine_similarity(vec1, vec2):
 
     return dot_product / (magnitude1 * magnitude2)
 
-
+@profile
 # 完整的余弦 + 编辑距离查重计算函数
 def similarity(text1, text2,cosine_weight,edit_distance_weight):
     r_text1=read_file(text1)
@@ -99,17 +107,20 @@ def similarity(text1, text2,cosine_weight,edit_distance_weight):
     final_similarity = (cosine_weight * similarity_result) + (edit_distance_weight * edit_distance_similarity_result)
     return final_similarity
 
-def cmd():
+@profile
+def main():
     if len(sys.argv) != 4:
         print("路径有误！用法: python main.py <original_file> <plagiarized_file> <output_file>")
         sys.exit(1)
 
+    #控制台指令
     original_file = sys.argv[1]
     plagiarized_file = sys.argv[2]
     output_file = sys.argv[3]
 
     # 计算相似度
-    similarity_result = similarity(original_file, plagiarized_file, cosine_weight=0.7, edit_distance_weight=0.3)
+    similarity_result = similarity(original_file, plagiarized_file,
+                                   cosine_weight=0.7, edit_distance_weight=0.3)
     print(f"文本查重：{similarity_result:.2f}")
     # 输出相似度结果到指定的文件中
     with open(output_file, 'w', encoding='utf-8') as file:
@@ -120,5 +131,4 @@ if __name__ == "__main__":
     # text2 = "../examples/orig_0.8_dis_10.txt"
     # similarity_result = similarity(text1, text2,cosine_weight=0.7, edit_distance_weight=0.3)
     # print(f"文本查重：{similarity_result:.2f}")
-
-    cmd()
+    main()
