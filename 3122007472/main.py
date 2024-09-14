@@ -9,8 +9,11 @@ from line_profiler_pycharm import profile
 @profile
 # 读取文件内容
 def read_file(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return file.read()
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"没找到文件: {file_path}")
 
 @profile
 # 文本预处理函数
@@ -87,6 +90,9 @@ def similarity(text1, text2,cosine_weight,edit_distance_weight):
     p_text1 = preprocess_text(r_text1)
     p_text2 = preprocess_text(r_text2)
 
+    if not p_text1 or not p_text2:
+        raise ValueError("报错，空文件无法查重！请重新输入！")
+
     # jieba分词
     original_words = segment_text(p_text1)
     modified_words = segment_text(p_text2)
@@ -110,7 +116,7 @@ def similarity(text1, text2,cosine_weight,edit_distance_weight):
 @profile
 def main():
     if len(sys.argv) != 4:
-        print("路径有误！用法: python main.py <original_file> <plagiarized_file> <output_file>")
+        print("输入有误！用法: python main.py <original_file> <plagiarized_file> <output_file>")
         sys.exit(1)
 
     #控制台指令
