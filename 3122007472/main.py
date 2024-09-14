@@ -16,19 +16,18 @@ def preprocess_text(text):
     # 去除多余的空白符
     text = re.sub(r'\s+', ' ', text).strip()
     #去除停用词 长文本中的常用词不计入查重
-    if(len(text) > 800):
-        text = re.sub(r'[的,了,是,很,我,有,和,也,吧,啊,你,他,她]','',text)
+    if len(text) > 800:
+        text = re.sub(r'[的了是很我有和也吧啊你他她]','',text)
     return text
 
 # 使用Jieba对文本进行分词
 def segment_text(text):
-    def segment_text(text):
-        words = jieba.lcut(text, cut_all=True)
-        processed_words = []
-        for word in words:
-            if word.strip():
-                processed_words.append(word)
-        return processed_words
+    words = jieba.lcut(text, cut_all=True)
+    processed_words = []
+    for word in words:
+        if word.strip():
+            processed_words.append(word)
+    return processed_words
 
 # 计算词频
 def calculate_term_frequency(words):
