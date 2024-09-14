@@ -8,6 +8,7 @@ class TestSimilarityModule(unittest.TestCase):
     def test1_preprocess_text_normal(self):
         text = "今天是星期天，我去看电影了！"
         expected_result = "今天是星期天我去看电影了"
+        print(preprocess_text(text))
         self.assertEqual(preprocess_text(text), expected_result)
 
     # 测试2: 测试文本预处理函数 - 特殊字符
@@ -91,7 +92,7 @@ class TestSimilarityModule(unittest.TestCase):
         similarity = calculate_edit_distance_similarity(text1, text2)
         self.assertEqual(similarity, 1.0)
 
-    # 测试13: 测试相似度函数 - 正常文本
+    # 测试13: 测试相似度函数 - 正常相似文本
     def test13_similarity_normal(self):
         text1 = "../examples/orig.txt"
         text2 = "../examples/orig_0.8_add.txt"
@@ -105,12 +106,13 @@ class TestSimilarityModule(unittest.TestCase):
         similarity_result = similarity(text1, text2, cosine_weight=0.7, edit_distance_weight=0.3)
         self.assertAlmostEqual(similarity_result, 1.0)
 
-    # 测试15: 测试相似度函数 - 不同文本
+    # 测试15: 测试相似度函数 - 完全不同文本
     def test15_similarity_different(self):
         text1 = "../examples/orig.txt"
-        text2 = "../examples/orig_0.8_del.txt"
+        text2 = "../examples/chaos.txt"
         similarity_result = similarity(text1, text2, cosine_weight=0.7, edit_distance_weight=0.3)
-        self.assertAlmostEqual(similarity_result, 0.8)
+        print(f"文本查重：{similarity_result:.2f}")
+        self.assertLess(similarity_result, 0.1)
 
 if __name__ == '__main__':
     unittest.main()
